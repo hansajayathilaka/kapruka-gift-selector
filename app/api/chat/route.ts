@@ -8,6 +8,7 @@ import {
 } from "ai";
 import { z } from "zod";
 import { createKaprukaClient } from "@/lib/mcp";
+import { buildKaprukaTools } from "@/lib/kapruka-tools";
 import { buildSystemPrompt } from "@/lib/persona";
 import type { SearchCriteria } from "@/lib/criteria";
 
@@ -50,7 +51,7 @@ export async function POST(req: Request) {
   const mcpClient = await createKaprukaClient();
 
   try {
-    const kaprukaTools = await mcpClient.tools();
+    const kaprukaTools = await buildKaprukaTools(mcpClient);
 
     const result = streamText({
       model: google(MODEL),
