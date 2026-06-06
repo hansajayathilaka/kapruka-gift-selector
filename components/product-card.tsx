@@ -25,11 +25,11 @@ export function ProductCard({ product, loadingImage, onAdd, onDetails }: Product
   const soldOut = tone === "out";
 
   return (
-    <div className="group flex w-52 shrink-0 flex-col overflow-hidden rounded-2xl border bg-card shadow-sm ring-1 ring-transparent transition-all hover:-translate-y-0.5 hover:shadow-xl hover:ring-primary/20">
+    <div className="group flex w-52 shrink-0 flex-col overflow-hidden rounded-2xl border bg-card shadow-sm ring-1 ring-transparent transition-all hover:-translate-y-0.5 hover:shadow-xl hover:ring-indigo-300/40 dark:hover:ring-indigo-600/30">
       <button
         type="button"
         onClick={() => onDetails?.(product)}
-        className="relative aspect-square w-full overflow-hidden bg-gradient-to-br from-fuchsia-100 via-rose-50 to-amber-100 dark:from-fuchsia-950/40 dark:via-rose-950/30 dark:to-amber-950/30"
+        className="relative aspect-square w-full overflow-hidden bg-gradient-to-br from-indigo-50 via-slate-50 to-violet-50/60 dark:from-indigo-950/40 dark:via-slate-900/30 dark:to-violet-950/30"
       >
         {product.image ? (
           <Image
@@ -41,9 +41,9 @@ export function ProductCard({ product, loadingImage, onAdd, onDetails }: Product
             unoptimized
           />
         ) : loadingImage ? (
-          <div className="absolute inset-0 animate-pulse bg-gradient-to-br from-fuchsia-200/60 to-amber-200/60 dark:from-fuchsia-900/40 dark:to-amber-900/40" />
+          <div className="absolute inset-0 animate-pulse bg-gradient-to-br from-indigo-100/60 to-violet-100/60 dark:from-indigo-900/30 dark:to-violet-900/30" />
         ) : (
-          <div className="flex h-full w-full items-center justify-center text-rose-300 dark:text-rose-700">
+          <div className="flex h-full w-full items-center justify-center text-indigo-200 dark:text-indigo-800">
             <ImageIcon className="size-10" />
           </div>
         )}
@@ -67,7 +67,7 @@ export function ProductCard({ product, loadingImage, onAdd, onDetails }: Product
           <p className="text-xs text-muted-foreground">{product.category}</p>
         )}
         {product.price && (
-          <p className="mt-0.5 text-base font-extrabold text-fuchsia-600 dark:text-fuchsia-400">
+          <p className="mt-0.5 text-base font-extrabold text-indigo-700 dark:text-indigo-400">
             {product.price}
           </p>
         )}
@@ -75,7 +75,7 @@ export function ProductCard({ product, loadingImage, onAdd, onDetails }: Product
         <div className="mt-auto flex items-center gap-2 pt-2">
           <Button
             size="sm"
-            className="flex-1 bg-gradient-to-r from-fuchsia-600 to-rose-500 text-white hover:opacity-90"
+            className="flex-1 bg-gradient-to-r from-indigo-600 to-violet-600 text-white hover:opacity-90"
             disabled={soldOut}
             onClick={() => onAdd?.(product)}
           >
