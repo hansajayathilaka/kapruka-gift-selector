@@ -40,7 +40,7 @@ export function ProductCarousel({ products, onAdd, onDetails }: ProductCarouselP
   if (products.length === 0) return null;
 
   return (
-    <div className="-mx-1 mt-3 flex gap-3 overflow-x-auto px-1 pb-2 [scrollbar-width:thin]">
+    <div className="mt-3 grid max-h-[26rem] w-full grid-cols-2 gap-3 overflow-y-auto rounded-xl pr-1 [scrollbar-width:thin] sm:grid-cols-3">
       {products.map((product) => {
         const loadingImage = !product.image && !(product.id in images);
         return (

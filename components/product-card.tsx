@@ -25,7 +25,7 @@ export function ProductCard({ product, loadingImage, onAdd, onDetails }: Product
   const soldOut = tone === "out";
 
   return (
-    <div className="group flex w-60 shrink-0 flex-col overflow-hidden rounded-2xl border bg-card shadow-sm ring-1 ring-transparent transition-all hover:-translate-y-0.5 hover:shadow-xl hover:ring-primary/20">
+    <div className="group flex w-full flex-col overflow-hidden rounded-2xl border bg-card shadow-sm ring-1 ring-transparent transition-all hover:-translate-y-0.5 hover:shadow-xl hover:ring-primary/20">
       <button
         type="button"
         onClick={() => onDetails?.(product)}
