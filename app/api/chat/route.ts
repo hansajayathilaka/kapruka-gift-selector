@@ -9,6 +9,7 @@ import {
 import { z } from "zod";
 import { createKaprukaClient } from "@/lib/mcp";
 import { buildKaprukaTools } from "@/lib/kapruka-tools";
+import { getCategoryNames } from "@/lib/categories";
 import { buildSystemPrompt } from "@/lib/persona";
 import type { SearchCriteria } from "@/lib/criteria";
 
@@ -46,12 +47,19 @@ export async function POST(req: Request) {
   const {
     messages,
     criteria,
-  }: { messages: UIMessage[]; criteria?: SearchCriteria } = await req.json();
+    categories: clientCategories,
+  }: { messages: UIMessage[]; criteria?: SearchCriteria; categories?: string[] } =
+    await req.json();
 
   const mcpClient = await createKaprukaClient();
 
   try {
+    // Prefer categories the client loaded on startup; otherwise fetch (cached).
     const kaprukaTools = await buildKaprukaTools(mcpClient);
+    const categories =
+      clientCategories && clientCategories.length > 0
+        ? clientCategories
+        : await getCategoryNames(mcpClient);
 
     const result = streamText({
       model: google(MODEL),
@@ -59,6 +67,7 @@ export async function POST(req: Request) {
         criteria ?? {},
         // Surface server-provided usage instructions to the model when present.
         (mcpClient as { instructions?: string }).instructions,
+        categories,
       ),
       messages: await convertToModelMessages(messages),
       tools: {

@@ -137,14 +137,31 @@ export default function Home() {
   ttsOnRef.current = ttsOn;
 
   const criteriaRef = useRef<SearchCriteria>({});
+  const categoriesRef = useRef<string[]>([]);
   const bottomRef = useRef<HTMLDivElement | null>(null);
+
+  // Load the valid catalog categories once on startup, so they're known before
+  // any category-filtered product search.
+  useEffect(() => {
+    fetch("/api/categories")
+      .then((r) => r.json())
+      .then((data: { categories?: string[] }) => {
+        if (Array.isArray(data.categories)) categoriesRef.current = data.categories;
+      })
+      .catch(() => {});
+  }, []);
 
   const transport = useMemo(
     () =>
       new DefaultChatTransport({
         api: "/api/chat",
         prepareSendMessagesRequest: ({ messages, body }) => ({
-          body: { messages, criteria: criteriaRef.current, ...body },
+          body: {
+            messages,
+            criteria: criteriaRef.current,
+            categories: categoriesRef.current,
+            ...body,
+          },
         }),
       }),
     [],
@@ -260,20 +277,20 @@ export default function Home() {
 
   return (
     <div className="relative flex h-dvh w-full flex-col">
-      {/* Vibrant ambient background */}
-      <div className="pointer-events-none fixed inset-0 -z-10 bg-gradient-to-br from-fuchsia-50 via-white to-amber-50 dark:from-fuchsia-950/30 dark:via-background dark:to-amber-950/20" />
-      <div className="pointer-events-none fixed -left-24 top-10 -z-10 size-72 rounded-full bg-fuchsia-300/30 blur-3xl dark:bg-fuchsia-700/20" />
-      <div className="pointer-events-none fixed -right-24 bottom-10 -z-10 size-72 rounded-full bg-amber-300/30 blur-3xl dark:bg-amber-700/20" />
+      {/* Ambient background */}
+      <div className="pointer-events-none fixed inset-0 -z-10 bg-gradient-to-br from-slate-50 via-white to-indigo-50/40 dark:from-background dark:via-background dark:to-indigo-950/20" />
+      <div className="pointer-events-none fixed -left-32 top-0 -z-10 size-80 rounded-full bg-indigo-200/20 blur-3xl dark:bg-indigo-700/10" />
+      <div className="pointer-events-none fixed -right-32 bottom-0 -z-10 size-80 rounded-full bg-violet-200/20 blur-3xl dark:bg-violet-700/10" />
 
       <div className="mx-auto flex h-full w-full max-w-3xl flex-col px-3 sm:px-4">
       {/* Header */}
       <header className="flex items-center justify-between py-3">
         <div className="flex items-center gap-2.5">
-          <div className="flex size-9 items-center justify-center rounded-xl bg-gradient-to-br from-fuchsia-600 to-rose-500 text-white shadow-md shadow-fuchsia-500/20">
+          <div className="flex size-9 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-600 to-violet-600 text-white shadow-md shadow-indigo-500/20">
             <Gift className="size-5" />
           </div>
           <div>
-            <h1 className="text-sm font-bold leading-tight text-fuchsia-600 dark:text-fuchsia-400">
+            <h1 className="text-sm font-bold leading-tight text-indigo-700 dark:text-indigo-400">
               Kapri
             </h1>
             <p className="text-xs text-muted-foreground">Kapruka Gift Concierge</p>
@@ -333,7 +350,7 @@ export default function Home() {
       <div className="flex-1 space-y-5 overflow-y-auto py-2 [scrollbar-width:thin]">
         {messages.length === 0 ? (
           <div className="flex h-full flex-col items-center justify-center gap-4 px-6 text-center">
-            <div className="flex size-16 items-center justify-center rounded-2xl bg-gradient-to-br from-fuchsia-600 to-rose-500 text-white shadow-lg shadow-fuchsia-500/25">
+            <div className="flex size-16 items-center justify-center rounded-2xl bg-gradient-to-br from-indigo-600 to-violet-600 text-white shadow-lg shadow-indigo-500/25">
               <Gift className="size-8" />
             </div>
             <div className="space-y-1.5">
@@ -349,9 +366,9 @@ export default function Home() {
                   key={s}
                   type="button"
                   onClick={() => send(s)}
-                  className="inline-flex items-center gap-1.5 rounded-full border bg-card px-3.5 py-2 text-sm shadow-sm transition-all hover:-translate-y-0.5 hover:border-fuchsia-300 hover:bg-fuchsia-50 hover:shadow-md dark:hover:bg-fuchsia-950/30"
+                  className="inline-flex items-center gap-1.5 rounded-full border bg-card px-3.5 py-2 text-sm shadow-sm transition-all hover:-translate-y-0.5 hover:border-indigo-200 hover:bg-indigo-50/70 hover:shadow-md dark:hover:bg-indigo-950/30"
                 >
-                  <Sparkles className="size-3.5 text-fuchsia-500" />
+                  <Sparkles className="size-3.5 text-indigo-500" />
                   {s}
                 </button>
               ))}
@@ -373,7 +390,7 @@ export default function Home() {
                     className={cn(
                       "max-w-[88%] text-sm",
                       isUser
-                        ? "rounded-2xl rounded-br-sm bg-gradient-to-br from-fuchsia-600 to-rose-500 px-4 py-2.5 whitespace-pre-wrap text-white shadow-sm shadow-fuchsia-500/20"
+                        ? "rounded-2xl rounded-br-sm bg-gradient-to-br from-indigo-600 to-violet-600 px-4 py-2.5 whitespace-pre-wrap text-white shadow-sm shadow-indigo-500/20"
                         : "w-full",
                     )}
                   >
@@ -425,7 +442,7 @@ export default function Home() {
           e.preventDefault();
           send(input);
         }}
-        className="mb-3 flex items-end gap-2 rounded-2xl border bg-card/80 p-2 shadow-sm backdrop-blur transition-shadow focus-within:border-fuchsia-300 focus-within:shadow-lg focus-within:shadow-fuchsia-500/10 focus-within:ring-2 focus-within:ring-fuchsia-400/40"
+        className="mb-3 flex items-end gap-2 rounded-2xl border bg-card/80 p-2 shadow-sm backdrop-blur transition-shadow focus-within:border-indigo-300 focus-within:shadow-lg focus-within:shadow-indigo-500/10 focus-within:ring-2 focus-within:ring-indigo-400/40"
       >
         {sttSupported && (
           <Button
@@ -462,7 +479,7 @@ export default function Home() {
             size="icon"
             disabled={!input.trim()}
             title="Send"
-            className="bg-gradient-to-br from-fuchsia-600 to-rose-500 text-white hover:opacity-90"
+            className="bg-gradient-to-br from-indigo-600 to-violet-600 text-white hover:opacity-90"
           >
             <ArrowUp className="size-5" />
           </Button>

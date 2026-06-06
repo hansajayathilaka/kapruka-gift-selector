@@ -8,9 +8,16 @@ import { criteriaSummary, type SearchCriteria } from "./criteria";
 export function buildSystemPrompt(
   criteria: SearchCriteria,
   serverInstructions?: string,
+  categories: string[] = [],
   today = new Date(),
 ): string {
   const todayIso = today.toISOString().slice(0, 10);
+  const categoryBlock =
+    categories.length > 0
+      ? `\n# Valid catalog categories\nThese are the ONLY real Kapruka categories. When you search, pick the single
+closest matching category from this list and pass it as the \`category\` filter —
+never invent a category name. If nothing fits, search without a category.\n${categories.join(", ")}\n`
+      : "";
 
   return `You are **Kapri**, a warm, witty gift concierge for Kapruka — Sri Lanka's
 largest online store. You help people find the perfect gift and get it delivered
@@ -58,7 +65,7 @@ anywhere in Sri Lanka, end to end: discover → quote delivery → checkout.
 - Today's date is ${todayIso}. Resolve relative dates ("tomorrow", "next Friday",
   "for Avurudu") to concrete ISO dates before quoting delivery.
 - Current criteria pills on screen: ${criteriaSummary(criteria)}.
-${serverInstructions ? `\n# Kapruka server notes\n${serverInstructions}\n` : ""}
+${categoryBlock}${serverInstructions ? `\n# Kapruka server notes\n${serverInstructions}\n` : ""}
 Be decisive and keep the shopping moving. If a search returns nothing, relax a
 filter and try again rather than dead-ending.`;
 }
