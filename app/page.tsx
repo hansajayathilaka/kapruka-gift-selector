@@ -273,7 +273,7 @@ export default function Home() {
             <Gift className="size-5" />
           </div>
           <div>
-            <h1 className="bg-gradient-to-r from-fuchsia-600 to-rose-500 bg-clip-text text-sm font-bold leading-tight text-transparent dark:from-fuchsia-400 dark:to-rose-300">
+            <h1 className="text-sm font-bold leading-tight text-fuchsia-600 dark:text-fuchsia-400">
               Kapri
             </h1>
             <p className="text-xs text-muted-foreground">Kapruka Gift Concierge</p>
