@@ -67,7 +67,7 @@ export function ProductCard({ product, loadingImage, onAdd, onDetails }: Product
           <p className="text-xs text-muted-foreground">{product.category}</p>
         )}
         {product.price && (
-          <p className="mt-0.5 bg-gradient-to-r from-fuchsia-600 to-rose-500 bg-clip-text text-base font-extrabold text-transparent dark:from-fuchsia-400 dark:to-rose-300">
+          <p className="mt-0.5 text-base font-extrabold text-fuchsia-600 dark:text-fuchsia-400">
             {product.price}
           </p>
         )}
