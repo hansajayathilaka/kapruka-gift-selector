@@ -23,11 +23,11 @@ export function CriteriaBar({ criteria, onRemove, onClear, className }: Criteria
   return (
     <div
       className={cn(
-        "flex flex-wrap items-center gap-2 rounded-2xl border bg-card/60 px-3 py-2.5 shadow-sm backdrop-blur",
+        "flex flex-wrap items-center gap-2 rounded-2xl border border-fuchsia-200/60 bg-gradient-to-r from-fuchsia-50/80 to-amber-50/80 px-3 py-2.5 shadow-sm backdrop-blur dark:border-fuchsia-900/40 dark:from-fuchsia-950/30 dark:to-amber-950/20",
         className,
       )}
     >
-      <span className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
+      <span className="flex items-center gap-1.5 text-xs font-semibold text-fuchsia-600 dark:text-fuchsia-400">
         <SlidersHorizontal className="size-3.5" />
         Searching for
       </span>
@@ -36,7 +36,7 @@ export function CriteriaBar({ criteria, onRemove, onClear, className }: Criteria
           key={pill.id}
           type="button"
           onClick={() => onRemove(pill)}
-          className="group inline-flex items-center gap-1.5 rounded-full border bg-background py-1 pl-2.5 pr-1.5 text-sm font-medium shadow-sm transition-colors hover:border-destructive/40 hover:bg-destructive/5"
+          className="group inline-flex items-center gap-1.5 rounded-full border border-fuchsia-200 bg-white py-1 pl-2.5 pr-1.5 text-sm font-medium text-fuchsia-900 shadow-sm transition-colors hover:border-destructive/40 hover:bg-destructive/5 dark:border-fuchsia-900/50 dark:bg-fuchsia-950/40 dark:text-fuchsia-100"
           title={`Remove "${pill.label}"`}
         >
           <span aria-hidden>{pill.icon}</span>

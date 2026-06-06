@@ -6,6 +6,7 @@ import { DefaultChatTransport, type UIMessage } from "ai";
 import { toast } from "sonner";
 import {
   ArrowUp,
+  Bug,
   Gift,
   Loader2,
   Mic,
@@ -22,6 +23,7 @@ import { CriteriaBar } from "@/components/criteria-bar";
 import { ProductCarousel } from "@/components/product-carousel";
 import { CartSheet, type CartItem } from "@/components/cart-sheet";
 import { ChatMarkdown } from "@/components/chat-markdown";
+import { DebugDrawer, type ToolEvent } from "@/components/debug-drawer";
 
 import { mergeCriteria, type Pill, type SearchCriteria } from "@/lib/criteria";
 import { extractProducts, mergeProduct, type Product } from "@/lib/parse-products";
@@ -79,6 +81,29 @@ function productsForMessage(m: UIMessage, index: Map<string, Product>): Product[
   return ids.map((id) => index.get(id)).filter((p): p is Product => Boolean(p));
 }
 
+function collectToolEvents(messages: UIMessage[]): ToolEvent[] {
+  const events: ToolEvent[] = [];
+  messages.forEach((m, mi) => {
+    (m.parts as AnyPart[]).forEach((part, pi) => {
+      const isDynamic = part.type === "dynamic-tool";
+      const isLocalTool = part.type.startsWith("tool-");
+      if (!isDynamic && !isLocalTool) return;
+      const name = isDynamic ? part.toolName ?? "tool" : part.type.replace(/^tool-/, "");
+      const out = part.output as { isError?: boolean } | undefined;
+      const pending = part.state !== "output-available" && part.state !== "output-error";
+      events.push({
+        id: `${m.id}-${mi}-${pi}`,
+        name,
+        input: part.input,
+        output: part.output,
+        isError: part.state === "output-error" || out?.isError === true,
+        pending,
+      });
+    });
+  });
+  return events;
+}
+
 /** Tool names that are running but have no output yet → show a working indicator. */
 function activeToolLabel(m: UIMessage): string | null {
   const labels: Record<string, string> = {
@@ -105,6 +130,7 @@ function activeToolLabel(m: UIMessage): string | null {
 export default function Home() {
   const [cart, setCart] = useState<CartItem[]>([]);
   const [cartOpen, setCartOpen] = useState(false);
+  const [debugOpen, setDebugOpen] = useState(false);
   const [ttsOn, setTtsOn] = useState(false);
   const [input, setInput] = useState("");
   const ttsOnRef = useRef(ttsOn);
@@ -156,6 +182,9 @@ export default function Home() {
     }
     return index;
   }, [messages]);
+
+  const toolEvents = useMemo(() => collectToolEvents(messages), [messages]);
+  const errorCount = toolEvents.filter((e) => e.isError).length;
 
   const isBusy = status === "submitted" || status === "streaming";
 
@@ -230,19 +259,41 @@ export default function Home() {
   const cartCount = cart.reduce((n, it) => n + it.qty, 0);
 
   return (
-    <div className="mx-auto flex h-dvh w-full max-w-3xl flex-col px-3 sm:px-4">
+    <div className="relative flex h-dvh w-full flex-col">
+      {/* Vibrant ambient background */}
+      <div className="pointer-events-none fixed inset-0 -z-10 bg-gradient-to-br from-fuchsia-50 via-white to-amber-50 dark:from-fuchsia-950/30 dark:via-background dark:to-amber-950/20" />
+      <div className="pointer-events-none fixed -left-24 top-10 -z-10 size-72 rounded-full bg-fuchsia-300/30 blur-3xl dark:bg-fuchsia-700/20" />
+      <div className="pointer-events-none fixed -right-24 bottom-10 -z-10 size-72 rounded-full bg-amber-300/30 blur-3xl dark:bg-amber-700/20" />
+
+      <div className="mx-auto flex h-full w-full max-w-3xl flex-col px-3 sm:px-4">
       {/* Header */}
       <header className="flex items-center justify-between py-3">
         <div className="flex items-center gap-2.5">
-          <div className="flex size-9 items-center justify-center rounded-xl bg-primary text-primary-foreground shadow-sm">
+          <div className="flex size-9 items-center justify-center rounded-xl bg-gradient-to-br from-fuchsia-600 to-rose-500 text-white shadow-md shadow-fuchsia-500/20">
             <Gift className="size-5" />
           </div>
           <div>
-            <h1 className="text-sm font-semibold leading-tight">Kapri</h1>
+            <h1 className="bg-gradient-to-r from-fuchsia-600 to-rose-500 bg-clip-text text-sm font-bold leading-tight text-transparent dark:from-fuchsia-400 dark:to-rose-300">
+              Kapri
+            </h1>
             <p className="text-xs text-muted-foreground">Kapruka Gift Concierge</p>
           </div>
         </div>
         <div className="flex items-center gap-1.5">
+          <Button
+            size="icon"
+            variant="ghost"
+            className="relative"
+            onClick={() => setDebugOpen(true)}
+            title="Tool activity / debug"
+          >
+            <Bug className="size-5" />
+            {errorCount > 0 && (
+              <span className="absolute -right-0.5 -top-0.5 flex size-4 min-w-4 items-center justify-center rounded-full bg-rose-500 px-1 text-[10px] font-bold text-white">
+                {errorCount}
+              </span>
+            )}
+          </Button>
           <Button
             size="icon"
             variant="ghost"
@@ -282,11 +333,11 @@ export default function Home() {
       <div className="flex-1 space-y-5 overflow-y-auto py-2 [scrollbar-width:thin]">
         {messages.length === 0 ? (
           <div className="flex h-full flex-col items-center justify-center gap-4 px-6 text-center">
-            <div className="flex size-16 items-center justify-center rounded-2xl bg-primary/10 text-primary">
+            <div className="flex size-16 items-center justify-center rounded-2xl bg-gradient-to-br from-fuchsia-600 to-rose-500 text-white shadow-lg shadow-fuchsia-500/25">
               <Gift className="size-8" />
             </div>
             <div className="space-y-1.5">
-              <h2 className="text-xl font-semibold">What&apos;s the occasion? 🎁</h2>
+              <h2 className="text-xl font-bold">What&apos;s the occasion? 🎁</h2>
               <p className="mx-auto max-w-md text-sm text-muted-foreground">
                 Tell me who it&apos;s for, the vibe, your budget and where to deliver — I&apos;ll
                 find the perfect gift and arrange delivery anywhere in Sri Lanka.
@@ -298,9 +349,9 @@ export default function Home() {
                   key={s}
                   type="button"
                   onClick={() => send(s)}
-                  className="inline-flex items-center gap-1.5 rounded-full border bg-card px-3.5 py-2 text-sm shadow-sm transition-colors hover:bg-muted"
+                  className="inline-flex items-center gap-1.5 rounded-full border bg-card px-3.5 py-2 text-sm shadow-sm transition-all hover:-translate-y-0.5 hover:border-fuchsia-300 hover:bg-fuchsia-50 hover:shadow-md dark:hover:bg-fuchsia-950/30"
                 >
-                  <Sparkles className="size-3.5 text-primary" />
+                  <Sparkles className="size-3.5 text-fuchsia-500" />
                   {s}
                 </button>
               ))}
@@ -322,7 +373,7 @@ export default function Home() {
                     className={cn(
                       "max-w-[88%] text-sm",
                       isUser
-                        ? "rounded-2xl rounded-br-sm bg-secondary px-4 py-2.5 whitespace-pre-wrap text-secondary-foreground"
+                        ? "rounded-2xl rounded-br-sm bg-gradient-to-br from-fuchsia-600 to-rose-500 px-4 py-2.5 whitespace-pre-wrap text-white shadow-sm shadow-fuchsia-500/20"
                         : "w-full",
                     )}
                   >
@@ -374,7 +425,7 @@ export default function Home() {
           e.preventDefault();
           send(input);
         }}
-        className="mb-3 flex items-end gap-2 rounded-2xl border bg-card p-2 shadow-sm focus-within:ring-2 focus-within:ring-ring/40"
+        className="mb-3 flex items-end gap-2 rounded-2xl border bg-card/80 p-2 shadow-sm backdrop-blur transition-shadow focus-within:border-fuchsia-300 focus-within:shadow-lg focus-within:shadow-fuchsia-500/10 focus-within:ring-2 focus-within:ring-fuchsia-400/40"
       >
         {sttSupported && (
           <Button
@@ -406,11 +457,20 @@ export default function Home() {
             <Square className="size-4" />
           </Button>
         ) : (
-          <Button type="submit" size="icon" disabled={!input.trim()} title="Send">
+          <Button
+            type="submit"
+            size="icon"
+            disabled={!input.trim()}
+            title="Send"
+            className="bg-gradient-to-br from-fuchsia-600 to-rose-500 text-white hover:opacity-90"
+          >
             <ArrowUp className="size-5" />
           </Button>
         )}
       </form>
+
+      <DebugDrawer open={debugOpen} onOpenChange={setDebugOpen} events={toolEvents} />
+      </div>
     </div>
   );
 }

@@ -8,27 +8,28 @@ import { cn } from "@/lib/utils";
 
 interface ProductCardProps {
   product: Product;
+  loadingImage?: boolean;
   onAdd?: (product: Product) => void;
   onDetails?: (product: Product) => void;
 }
 
 const toneStyles: Record<string, string> = {
-  in: "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400",
-  low: "bg-amber-500/15 text-amber-600 dark:text-amber-400",
-  out: "bg-rose-500/15 text-rose-600 dark:text-rose-400",
+  in: "bg-emerald-500/90 text-white",
+  low: "bg-amber-500/90 text-white",
+  out: "bg-rose-500/90 text-white",
   unknown: "bg-muted text-muted-foreground",
 };
 
-export function ProductCard({ product, onAdd, onDetails }: ProductCardProps) {
+export function ProductCard({ product, loadingImage, onAdd, onDetails }: ProductCardProps) {
   const tone = stockTone(product.stock);
   const soldOut = tone === "out";
 
   return (
-    <div className="group flex w-60 shrink-0 flex-col overflow-hidden rounded-2xl border bg-card shadow-sm transition-shadow hover:shadow-md">
+    <div className="group flex w-60 shrink-0 flex-col overflow-hidden rounded-2xl border bg-card shadow-sm ring-1 ring-transparent transition-all hover:-translate-y-0.5 hover:shadow-xl hover:ring-primary/20">
       <button
         type="button"
         onClick={() => onDetails?.(product)}
-        className="relative aspect-square w-full overflow-hidden bg-muted"
+        className="relative aspect-square w-full overflow-hidden bg-gradient-to-br from-fuchsia-100 via-rose-50 to-amber-100 dark:from-fuchsia-950/40 dark:via-rose-950/30 dark:to-amber-950/30"
       >
         {product.image ? (
           <Image
@@ -36,18 +37,20 @@ export function ProductCard({ product, onAdd, onDetails }: ProductCardProps) {
             alt={product.name}
             fill
             sizes="240px"
-            className="object-cover transition-transform duration-300 group-hover:scale-105"
+            className="object-cover transition-transform duration-500 group-hover:scale-105"
             unoptimized
           />
+        ) : loadingImage ? (
+          <div className="absolute inset-0 animate-pulse bg-gradient-to-br from-fuchsia-200/60 to-amber-200/60 dark:from-fuchsia-900/40 dark:to-amber-900/40" />
         ) : (
-          <div className="flex h-full w-full items-center justify-center text-muted-foreground">
-            <ImageIcon className="size-10 opacity-40" />
+          <div className="flex h-full w-full items-center justify-center text-rose-300 dark:text-rose-700">
+            <ImageIcon className="size-10" />
           </div>
         )}
         {product.stock && (
           <span
             className={cn(
-              "absolute left-2 top-2 rounded-full px-2 py-0.5 text-[11px] font-semibold backdrop-blur",
+              "absolute left-2 top-2 rounded-full px-2 py-0.5 text-[11px] font-semibold shadow-sm backdrop-blur",
               toneStyles[tone],
             )}
           >
@@ -64,13 +67,15 @@ export function ProductCard({ product, onAdd, onDetails }: ProductCardProps) {
           <p className="text-xs text-muted-foreground">{product.category}</p>
         )}
         {product.price && (
-          <p className="mt-0.5 text-base font-bold text-primary">{product.price}</p>
+          <p className="mt-0.5 bg-gradient-to-r from-fuchsia-600 to-rose-500 bg-clip-text text-base font-extrabold text-transparent dark:from-fuchsia-400 dark:to-rose-300">
+            {product.price}
+          </p>
         )}
 
         <div className="mt-auto flex items-center gap-2 pt-2">
           <Button
             size="sm"
-            className="flex-1"
+            className="flex-1 bg-gradient-to-r from-fuchsia-600 to-rose-500 text-white hover:opacity-90"
             disabled={soldOut}
             onClick={() => onAdd?.(product)}
           >
