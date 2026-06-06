@@ -137,14 +137,31 @@ export default function Home() {
   ttsOnRef.current = ttsOn;
 
   const criteriaRef = useRef<SearchCriteria>({});
+  const categoriesRef = useRef<string[]>([]);
   const bottomRef = useRef<HTMLDivElement | null>(null);
+
+  // Load the valid catalog categories once on startup, so they're known before
+  // any category-filtered product search.
+  useEffect(() => {
+    fetch("/api/categories")
+      .then((r) => r.json())
+      .then((data: { categories?: string[] }) => {
+        if (Array.isArray(data.categories)) categoriesRef.current = data.categories;
+      })
+      .catch(() => {});
+  }, []);
 
   const transport = useMemo(
     () =>
       new DefaultChatTransport({
         api: "/api/chat",
         prepareSendMessagesRequest: ({ messages, body }) => ({
-          body: { messages, criteria: criteriaRef.current, ...body },
+          body: {
+            messages,
+            criteria: criteriaRef.current,
+            categories: categoriesRef.current,
+            ...body,
+          },
         }),
       }),
     [],
